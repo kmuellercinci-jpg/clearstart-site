@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ClearStart – CeraVe Skincare App</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#f0ede8;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'DM Sans',sans-serif}
+  .shell{width:375px;height:760px;background:#fff;border-radius:40px;overflow:hidden;position:relative;box-shadow:0 32px 80px rgba(0,0,0,0.18);border:8px solid #1a1a1a}
+  .screen{position:absolute;inset:0;padding:48px 28px 32px;display:flex;flex-direction:column;transition:opacity 0.35s ease,transform 0.35s ease;opacity:0;pointer-events:none;transform:translateX(30px)}
+  .screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
+  .screen.exit{opacity:0;transform:translateX(-30px)}
+  /* typography */
+  h1{font-family:'DM Serif Display',serif;font-size:32px;line-height:1.18;color:#0f1a14;margin-bottom:10px}
+  h2{font-family:'DM Serif Display',serif;font-size:24px;color:#0f1a14;margin-bottom:8px}
+  p{font-size:14px;color:#5a6660;line-height:1.65}
+  /* buttons */
+  .btn{width:100%;padding:16px;border:none;border-radius:999px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:transform 0.12s,opacity 0.12s}
+  .btn:active{transform:scale(0.97)}
+  .btn-primary{background:#1a6b4a;color:#fff}
+  .btn-ghost{background:transparent;color:#1a6b4a;font-size:14px;margin-top:8px}
+  /* progress */
+  .progress-track{height:4px;background:#e8f0ec;border-radius:4px;margin-bottom:28px}
+  .progress-fill{height:4px;background:#1a6b4a;border-radius:4px;transition:width 0.4s ease}
+  /* quiz option */
+  .option{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1.5px solid #e0ebe4;margin-bottom:10px;cursor:pointer;transition:all 0.18s;background:#fff}
+  .option:hover{border-color:#5DCAA5;background:#f4fcf8}
+  .option.selected{border-color:#1a6b4a;background:#f0faf5}
+  .radio{width:20px;height:20px;border-radius:50%;border:1.5px solid #c0d5c9;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all 0.18s}
+  .option.selected .radio{background:#1a6b4a;border-color:#1a6b4a}
+  .option.selected .radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#fff}
+  .option-label{font-size:14px;color:#1a2e22;font-weight:500}
+  .option-sub{font-size:12px;color:#7a9087;margin-top:2px}
+  /* pill tag */
+  .tag{display:inline-block;background:#e8f5ef;color:#0f6e56;font-size:11px;font-weight:600;padding:4px 10px;border-radius:99px;margin-right:6px;margin-bottom:6px;letter-spacing:0.02em}
+  /* product card */
+  .product-card{background:#f7fbf9;border-radius:18px;padding:16px;margin-bottom:12px;display:flex;align-items:center;gap:14px;border:1px solid #d8ede4}
+  .product-icon{width:52px;height:52px;border-radius:12px;background:#1a6b4a;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .product-icon svg{width:26px;height:26px}
+  .step-badge{font-size:11px;font-weight:700;color:#0f6e56;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px}
+  .product-name{font-size:14px;font-weight:600;color:#0f1a14}
+  .product-desc{font-size:12px;color:#7a9087;margin-top:1px}
+  /* result hero */
+  .result-hero{background:linear-gradient(135deg,#1a6b4a 0%,#0d4a31 100%);border-radius:20px;padding:20px;margin-bottom:20px;color:#fff;text-align:center}
+  .result-hero h2{font-family:'DM Serif Display',serif;color:#fff;font-size:20px;margin-bottom:4px}
+  .result-hero p{color:#9fdbbc;font-size:13px}
+  /* top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .back-btn{background:none;border:none;font-size:13px;color:#5a6660;cursor:pointer;padding:4px 0;font-family:'DM Sans',sans-serif}
+  .q-count{font-size:12px;color:#5a6660;font-weight:500}
+  /* intro visual */
+  .intro-visual{background:#f0faf5;border-radius:24px;display:flex;align-items:center;justify-content:center;flex:1;margin-bottom:24px;position:relative;overflow:hidden}
+  .circle-lg{width:120px;height:120px;border-radius:50%;background:#c8eed9;display:flex;align-items:center;justify-content:center}
+  .circle-sm{width:64px;height:64px;border-radius:50%;background:#1a6b4a;display:flex;align-items:center;justify-content:center}
+  /* success screen */
+  .checkmark{width:64px;height:64px;background:#1a6b4a;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .scroll-body{flex:1;overflow-y:auto;padding-bottom:8px}
+  .scroll-body::-webkit-scrollbar{display:none}
+  /* timeline note */
+  .timeline{background:#fff9ee;border-radius:14px;padding:12px 14px;margin-top:14px;border:1px solid #f5dfa0}
+  .timeline p{font-size:12px;color:#8a6a10}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SCREEN 0: Welcome -->
+  <div class="screen active" id="s0">
+    <div class="intro-visual">
+      <div class="circle-lg">
+        <div class="circle-sm">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" fill="#c8eed9"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#c8eed9" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <span class="tag">CeraVe × ClearStart</span>
+    <h1>Your skin,<br/><i>finally</i> understood.</h1>
+    <p style="margin-bottom:28px">Answer 5 quick questions and we'll build a simple, dermatologist-matched routine — no guesswork, no overwhelm.</p>
+    <button class="btn btn-primary" onclick="go(1)">Build my routine →</button>
+    <button class="btn btn-ghost" onclick="go(1)">Skip intro</button>
+  </div>
+
+  <!-- SCREEN 1: Q1 – skin type -->
+  <div class="screen" id="s1">
+    <div class="topbar">
+      <button class="back-btn" onclick="go(0)">← Back</button>
+      <span class="q-count">1 of 5</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:20%"></div></div>
+    <h2>What's your skin usually like?</h2>
+    <p style="margin-bottom:20px">Think about how it feels a few hours after washing.</p>
+    <div class="option" onclick="pick(this,'s1')">
+      <div class="radio"></div>
+      <div><div class="option-label">Oily</div><div class="option-sub">Shiny, especially in T-zone</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s1')">
+      <div class="radio"></div>
+      <div><div class="option-label">Dry</div><div class="option-sub">Tight, flaky, or rough patches</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s1')">
+      <div class="radio"></div>
+      <div><div class="option-label">Combination</div><div class="option-sub">Oily in some spots, dry in others</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s1')">
+      <div class="radio"></div>
+      <div><div class="option-label">Normal</div><div class="option-sub">Generally balanced and comfortable</div></div>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" onclick="go(2)" style="margin-top:16px">Next →</button>
+  </div>
+
+  <!-- SCREEN 2: Q2 – sensitivity -->
+  <div class="screen" id="s2">
+    <div class="topbar">
+      <button class="back-btn" onclick="go(1)">← Back</button>
+      <span class="q-count">2 of 5</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:40%"></div></div>
+    <h2>How sensitive is your skin?</h2>
+    <p style="margin-bottom:20px">Do products usually cause redness, stinging, or breakouts?</p>
+    <div class="option" onclick="pick(this,'s2')">
+      <div class="radio"></div>
+      <div><div class="option-label">Very sensitive</div><div class="option-sub">Reacts to most new products</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s2')">
+      <div class="radio"></div>
+      <div><div class="option-label">Somewhat sensitive</div><div class="option-sub">Reacts occasionally to certain ingredients</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s2')">
+      <div class="radio"></div>
+      <div><div class="option-label">Not very sensitive</div><div class="option-sub">Most products work fine</div></div>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" onclick="go(3)" style="margin-top:16px">Next →</button>
+  </div>
+
+  <!-- SCREEN 3: Q3 – main concern -->
+  <div class="screen" id="s3">
+    <div class="topbar">
+      <button class="back-btn" onclick="go(2)">← Back</button>
+      <span class="q-count">3 of 5</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:60%"></div></div>
+    <h2>What's your main skin concern?</h2>
+    <p style="margin-bottom:20px">Pick the one that matters most to you right now.</p>
+    <div class="option" onclick="pick(this,'s3')">
+      <div class="radio"></div>
+      <div><div class="option-label">Acne or breakouts</div><div class="option-sub">Blackheads, pimples, clogged pores</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s3')">
+      <div class="radio"></div>
+      <div><div class="option-label">Dryness or flaking</div><div class="option-sub">Tightness, rough texture, dull skin</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s3')">
+      <div class="radio"></div>
+      <div><div class="option-label">Uneven skin tone</div><div class="option-sub">Redness, dark spots, blotchiness</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s3')">
+      <div class="radio"></div>
+      <div><div class="option-label">Just getting started</div><div class="option-sub">No major concern, want the basics</div></div>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" onclick="go(4)" style="margin-top:16px">Next →</button>
+  </div>
+
+  <!-- SCREEN 4: Q4 – routine experience -->
+  <div class="screen" id="s4">
+    <div class="topbar">
+      <button class="back-btn" onclick="go(3)">← Back</button>
+      <span class="q-count">4 of 5</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:80%"></div></div>
+    <h2>Have you tried a routine before?</h2>
+    <p style="margin-bottom:20px">Helps us know how much guidance to give you.</p>
+    <div class="option" onclick="pick(this,'s4')">
+      <div class="radio"></div>
+      <div><div class="option-label">Total beginner</div><div class="option-sub">I basically just use water</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s4')">
+      <div class="radio"></div>
+      <div><div class="option-label">Tried a few things</div><div class="option-sub">Haven't found a routine that stuck</div></div>
+    </div>
+    <div class="option" onclick="pick(this,'s4')">
+      <div class="radio"></div>
+      <div><div class="option-label">Had a routine before</div><div class="option-sub">Looking to simplify or restart</div></div>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn btn-primary" onclick="go(5)" style="margin-top:16px">See my routine →</button>
+  </div>
+
+  <!-- SCREEN 5: Results -->
+  <div class="screen" id="s5">
+    <div class="scroll-body">
+      <div class="result-hero">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:#9fdbbc;margin-bottom:6px">YOUR PERSONALISED ROUTINE</div>
+        <h2>Simple. Gentle. Effective.</h2>
+        <p>Dermatologist-approved for combination skin</p>
+      </div>
+
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="7" y="3" width="10" height="18" rx="3" fill="#9fdbbc"/><rect x="9" y="1" width="6" height="3" rx="1" fill="#c8eed9"/></svg>
+        </div>
+        <div>
+          <div class="step-badge">Morning · Step 1</div>
+          <div class="product-name">Hydrating Facial Cleanser</div>
+          <div class="product-desc">Removes dirt without stripping skin. 30 secs, once daily.</div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none"><ellipse cx="12" cy="14" rx="7" ry="6" fill="#9fdbbc"/><rect x="9" y="4" width="6" height="10" rx="3" fill="#c8eed9"/></svg>
+        </div>
+        <div>
+          <div class="step-badge">Morning · Step 2</div>
+          <div class="product-name">Moisturising Lotion</div>
+          <div class="product-desc">Restores barrier and locks in hydration. Apply morning & night.</div>
+        </div>
+      </div>
+
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" fill="#9fdbbc"/><path d="M8 9 Q12 6 16 9" stroke="#c8eed9" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div class="step-badge">Morning · Step 3</div>
+          <div class="product-name">AM Facial Moisturising Lotion SPF 30</div>
+          <div class="product-desc">Lightweight SPF to protect daily. Last step every morning.</div>
+        </div>
+      </div>
+
+      <div class="timeline">
+        <div style="font-size:12px;font-weight:700;color:#8a6a10;margin-bottom:4px">⏱ What to expect</div>
+        <p style="font-size:12px;color:#8a6a10">Week 1–2: Skin adjusting. Week 3–4: Texture smoothing. Most users notice a real difference by <strong>week 4.</strong> Stick with it!</p>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="go(6)" style="margin-top:16px">Save my routine ✓</button>
+  </div>
+
+  <!-- SCREEN 6: Saved / Celebrate -->
+  <div class="screen" id="s6" style="text-align:center;justify-content:center">
+    <div class="checkmark">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><polyline points="4,12 9,17 20,7" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h1 style="font-size:26px;margin-bottom:10px">Routine saved!</h1>
+    <p style="margin-bottom:28px">Your personalised 3-step CeraVe routine is ready. Start your 30-day progress tracker to stay motivated.</p>
+    <button class="btn btn-primary" onclick="go(0)" style="margin-bottom:10px">Start 30-day tracker →</button>
+    <button class="btn btn-ghost" onclick="go(0)">Back to home</button>
+  </div>
+
+</div>
+
+<script>
+function go(n){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('active','exit');
+    s.style.transform='translateX(30px)';
+  });
+  const t=document.getElementById('s'+n);
+  t.classList.add('active');
+  t.style.transform='translateX(0)';
+}
+function pick(el,screenId){
+  document.querySelectorAll('#'+screenId+' .option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+</body>
+</html>
